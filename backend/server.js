@@ -3,7 +3,6 @@ const cors = require('cors');
 require('dotenv').config();
 
 const app = express();
-const PORT = process.env.PORT || 3001;
 
 // Middleware
 app.use(cors());
@@ -64,7 +63,5 @@ app.post('/api/openai', async (req, res) => {
     }
 });
 
-app.listen(PORT, () => {
-    console.log(`Backend server running on port ${PORT}`);
-    console.log(`OpenAI API Key configured: ${process.env.OPENAI_API_KEY ? 'Yes' : 'No'}`);
-});
+// Export for Vercel serverless
+module.exports = app;

@@ -1,4 +1,4 @@
-<!--Working verion of ai_pictionary.  Submitted to Lonely Octopus Hackathon November 2025--> 
+<!--11-Nov-2025 Updated for 1). End Game button 2). Option for phone or laptop camera and 3). Back facing phone camera-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -39,6 +39,38 @@
             color: #667eea;
             margin-bottom: 30px;
             font-size: 2.5em;
+        }
+
+        .device-selection {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .device-selection h2 {
+            color: #667eea;
+            margin-bottom: 30px;
+            font-size: 1.8em;
+        }
+
+        .device-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .device-button {
+            padding: 30px 50px;
+            font-size: 1.3em;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            min-width: 200px;
+        }
+
+        .device-button .icon {
+            font-size: 3em;
         }
 
         .game-area {
@@ -175,6 +207,11 @@
             color: white;
         }
 
+        .btn-secondary {
+            background: #868e96;
+            color: white;
+        }
+
         .game-over {
             background: #fff3bf;
             border: 3px solid #ffd43b;
@@ -198,6 +235,25 @@
             color: #2f9e44;
         }
 
+        .thanks-message {
+            background: #e7f5ff;
+            border: 3px solid #4dabf7;
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .thanks-message h2 {
+            color: #1971c2;
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .thanks-message p {
+            color: #1864ab;
+            font-size: 1.2em;
+        }
+
         .loading {
             text-align: center;
             color: #667eea;
@@ -218,6 +274,11 @@
             .game-area {
                 grid-template-columns: 1fr;
             }
+            
+            .device-button {
+                min-width: 150px;
+                padding: 20px 30px;
+            }
         }
     </style>
 </head>
@@ -227,11 +288,11 @@
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
-        // CONFIGURE THIS: Change to your deployed backend URL
-        const BACKEND_URL = 'https://aipictionary-production.up.railway.app'; // Change this after deploying to Vercel
+        const BACKEND_URL = 'https://aipictionary-production.up.railway.app';
 
         function PictionaryGame() {
-            const [gameState, setGameState] = useState('setup');
+            const [gameState, setGameState] = useState('deviceSelection'); // deviceSelection, setup, ready, playing, ended, thanks
+            const [deviceType, setDeviceType] = useState(null); // 'phone' or 'computer'
             const [targetWord, setTargetWord] = useState('');
             const [timeLeft, setTimeLeft] = useState(60);
             const [guesses, setGuesses] = useState([]);
@@ -410,11 +471,18 @@
 
             const startWebcam = async () => {
                 try {
+                    const videoConstraints = {
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    };
+
+                    // Add facingMode for phone to use back camera
+                    if (deviceType === 'phone') {
+                        videoConstraints.facingMode = { ideal: "environment" };
+                    }
+
                     const stream = await navigator.mediaDevices.getUserMedia({ 
-                        video: { 
-                            width: { ideal: 1280 },
-                            height: { ideal: 720 }
-                        } 
+                        video: videoConstraints
                     });
                     streamRef.current = stream;
                     if (videoRef.current) {
@@ -434,6 +502,11 @@
                 if (videoRef.current) {
                     videoRef.current.srcObject = null;
                 }
+            };
+
+            const handleDeviceSelection = (device) => {
+                setDeviceType(device);
+                setGameState('setup');
             };
 
             const handleStartGame = async () => {
@@ -495,6 +568,10 @@
                 setError(null);
             };
 
+            const handleEndGame = () => {
+                setGameState('thanks');
+            };
+
             useEffect(() => {
                 return () => {
                     stopWebcam();
@@ -510,6 +587,28 @@
                     {error && (
                         <div className="error-message">
                             {error}
+                        </div>
+                    )}
+
+                    {gameState === 'deviceSelection' && (
+                        <div className="device-selection">
+                            <h2>What device are you using?</h2>
+                            <div className="device-buttons">
+                                <button 
+                                    className="btn-primary device-button" 
+                                    onClick={() => handleDeviceSelection('phone')}
+                                >
+                                    <span className="icon">📱</span>
+                                    <span>Using Phone</span>
+                                </button>
+                                <button 
+                                    className="btn-primary device-button" 
+                                    onClick={() => handleDeviceSelection('computer')}
+                                >
+                                    <span className="icon">💻</span>
+                                    <span>Using Computer</span>
+                                </button>
+                            </div>
                         </div>
                     )}
 
@@ -606,12 +705,24 @@
                                     </button>
                                 )}
                                 {gameState === 'ended' && (
-                                    <button className="btn-primary" onClick={handlePlayAgain}>
-                                        Play Again
-                                    </button>
+                                    <>
+                                        <button className="btn-primary" onClick={handlePlayAgain}>
+                                            Play Again
+                                        </button>
+                                        <button className="btn-secondary" onClick={handleEndGame}>
+                                            End Game
+                                        </button>
+                                    </>
                                 )}
                             </div>
                         </>
+                    )}
+
+                    {gameState === 'thanks' && (
+                        <div className="thanks-message">
+                            <h2>Thanks for playing! 🎨</h2>
+                            <p>Hope you had fun!</p>
+                        </div>
                     )}
                 </div>
             );
@@ -620,7 +731,4 @@
         ReactDOM.render(<PictionaryGame />, document.getElementById('root'));
     </script>
 </body>
-
 </html>
-
-

@@ -1,4 +1,4 @@
-<!--11-Nov-2025 Updated for 1). End Game button 2). Option for phone or laptop camera and 3). Back facing phone camera-->
+<!--Moved Start Timer button below the seconds window-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -681,6 +681,14 @@
                                         {timeLeft}s
                                     </div>
 
+                                    {gameState === 'ready' && (
+                                        <div style={{display: 'flex', justifyContent: 'center'}}>
+                                            <button className="btn-success" onClick={handleStartTimer}>
+                                                Start Timer
+                                            </button>
+                                        </div>
+                                    )}
+
                                     <div className="guesses-section">
                                         <h3>AI Guesses:</h3>
                                         {guesses.length === 0 && gameState === 'playing' && (
@@ -698,22 +706,16 @@
                                 </div>
                             </div>
 
-                            <div className="controls">
-                                {gameState === 'ready' && (
-                                    <button className="btn-success" onClick={handleStartTimer}>
-                                        Start Timer
+                            {gameState === 'ended' && (
+                                <div className="controls">
+                                    <button className="btn-primary" onClick={handlePlayAgain}>
+                                        Play Again
                                     </button>
-                                )}
-                                {gameState === 'ended' && (
-                                    <>
-                                        <button className="btn-primary" onClick={handlePlayAgain}>
-                                            Play Again
-                                        </button>
-                                        <button className="btn-secondary" onClick={handleEndGame}>
-                                            End Game
-                                        </button>
-                                    </>
-                                )}
+                                    <button className="btn-secondary" onClick={handleEndGame}>
+                                        End Game
+                                    </button>
+                                </div>
+                            )}
                             </div>
                         </>
                     )}
